@@ -36,7 +36,7 @@ public class CoinCapApi {
     }
 
     public Optional<String> getAssetIdBySymbol(String symbol) {
-        logger.info("Getting asset identification for {} symbol.", symbol);
+        logger.info("Get ID for {} asset.", symbol);
         HttpClient client = HttpClient.newBuilder().build();
         HttpRequest request = HttpRequest.newBuilder()
                 .GET()
