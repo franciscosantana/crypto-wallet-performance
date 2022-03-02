@@ -22,6 +22,8 @@ public class CryptoWalletPerformanceApplication {
 
         logger.info(result);
         logger.info("Crypto wallet performance analyze completed.");
+
+        AppFactory.getExecutorService().shutdown();
     }
 
     private static String resultToString(CryptoWalletPerformance cryptoWalletPerformance) {
