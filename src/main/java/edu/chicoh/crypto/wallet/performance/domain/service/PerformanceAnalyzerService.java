@@ -83,7 +83,7 @@ public class PerformanceAnalyzerService {
                                 .filter(Optional::isPresent)
                                 .map(Optional::get)
                                 .sorted(Comparator.comparing(CryptoAssetPosition::getPerformance))
-                                .collect(Collectors.toList())
+                                .collect(Collectors.toUnmodifiableList())
                 );
 
         try {
