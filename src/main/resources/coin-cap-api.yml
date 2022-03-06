@@ -1,0 +1,4 @@
+url: "https://api.coincap.io/v2/assets"
+apiKey: "9c39eb4c-de98-405d-b1bc-112fca2835c4"
+timeoutSeconds: 5
+

@@ -2,8 +2,8 @@ package edu.chicoh.crypto.wallet.performance.infra.external.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.chicoh.crypto.wallet.performance.config.CoinCapApiConfig;
 import edu.chicoh.crypto.wallet.performance.infra.exception.SystemException;
-import edu.chicoh.crypto.wallet.performance.infra.external.api.constants.CoinCapApiConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,6 +13,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -25,23 +27,25 @@ import static edu.chicoh.crypto.wallet.performance.infra.external.api.constants.
 
 public class CoinCapApi {
 
-    private static final String ASSETS_URL = "https://api.coincap.io/v2/assets";
-    private static final String API_KEY = "9c39eb4c-de98-405d-b1bc-112fca2835c4";
-
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final ObjectMapper objectMapper;
+    private final CoinCapApiConfig coinCapApiConfig;
 
-    public CoinCapApi(ObjectMapper objectMapper) {
+    public CoinCapApi(ObjectMapper objectMapper, CoinCapApiConfig coinCapApiConfig) {
         this.objectMapper = objectMapper;
+        this.coinCapApiConfig = coinCapApiConfig;
     }
 
     public Optional<String> getAssetIdBySymbol(String symbol) {
         logger.info("Get ID for {} asset.", symbol);
-        HttpClient client = HttpClient.newBuilder().build();
+        HttpClient client = HttpClient.newBuilder()
+                .connectTimeout(Duration.of(coinCapApiConfig.getTimeoutSeconds(), ChronoUnit.SECONDS))
+                .build();
+
         HttpRequest request = HttpRequest.newBuilder()
                 .GET()
-                .uri(URI.create(ASSETS_URL + "?search=" + symbol))
-                .header("Authorization", "Bearer " + API_KEY)
+                .uri(URI.create(coinCapApiConfig.getUrl() + "?search=" + symbol))
+                .header("Authorization", "Bearer " + coinCapApiConfig.getApiKey())
                 .build();
 
         HttpResponse<String> response;
@@ -82,11 +86,14 @@ public class CoinCapApi {
 
     public Optional<BigDecimal> getLastAssetPrice(String assetId, String interval, long start, long end) {
         logger.info("Get last price for asset {} in period.", assetId);
-        HttpClient client = HttpClient.newBuilder().build();
+        HttpClient client = HttpClient.newBuilder()
+                .connectTimeout(Duration.of(coinCapApiConfig.getTimeoutSeconds(), ChronoUnit.SECONDS))
+                .build();
         HttpRequest request = HttpRequest.newBuilder()
                 .GET()
-                .uri(URI.create(ASSETS_URL + "/" + assetId + "/history?interval=" + interval + "&start=" + start + "&end=" + end))
-                .header("Authorization", "Bearer " + API_KEY)
+                .uri(URI.create(coinCapApiConfig.getUrl() + "/" + assetId + "/history?interval=" + interval +
+                        "&start=" + start + "&end=" + end))
+                .header("Authorization", "Bearer " + coinCapApiConfig.getApiKey())
                 .build();
         HttpResponse<String> response;
         try {
@@ -117,7 +124,7 @@ public class CoinCapApi {
         return Optional.empty();
     }
 
-    private Optional<BigDecimal> extractLastAssetPriceFromResponse( HttpResponse<String> response) {
+    private Optional<BigDecimal> extractLastAssetPriceFromResponse(HttpResponse<String> response) {
         Hashtable jsonMap;
         try {
             jsonMap = objectMapper.readValue(response.body(), Hashtable.class);
@@ -128,7 +135,7 @@ public class CoinCapApi {
         final List<Map<String, Object>> data = (List<Map<String, Object>>) jsonMap.get("data");
         return data
                 .stream()
-                .sorted((o1, o2) -> ((Long)o2.get(TIME)).compareTo((Long)o1.get(TIME)))
+                .sorted((o1, o2) -> ((Long) o2.get(TIME)).compareTo((Long) o1.get(TIME)))
                 .map(o -> new BigDecimal((String) o.get(PRICE_USD)))
                 .findFirst();
     }
