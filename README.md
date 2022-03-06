@@ -1,6 +1,6 @@
 # Crypto wallet performance
 
-Given a CSV file as a crypto wallet, this app analyzes it against the current positions of your assets. So that indicates its total value and asset with best and worst performance.
+Given a CSV file as a crypto wallet, this app analyzes it against the current positions of its assets. So that indicates its total value and asset with best and worst performance.
 
 ## Installing / Getting started
 
