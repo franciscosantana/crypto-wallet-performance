@@ -24,7 +24,7 @@ public class CryptoAssetPosition {
     private BigDecimal calculatePerformance(CryptoAsset cryptoAsset) {
         return (currentPosition.subtract(cryptoAsset.getOriginalPosition()))
                 .divide(cryptoAsset.getOriginalPosition(), 2, RoundingMode.HALF_UP)
-                .multiply(BigDecimal.valueOf(100L));
+                .add(BigDecimal.ONE);
     }
 
     public CryptoAsset getCryptoAsset() { return cryptoAsset; }
